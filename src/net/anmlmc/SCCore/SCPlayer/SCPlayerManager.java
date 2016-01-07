@@ -7,6 +7,8 @@ import com.massivecraft.factions.entity.MPlayerColl;
 import com.massivecraft.massivecore.ps.PS;
 import net.anmlmc.SCCore.Lockpicks.LockpickRunnable;
 import net.anmlmc.SCCore.Main;
+import net.anmlmc.SCCore.Punishments.PunishmentEntry;
+import net.anmlmc.SCCore.Punishments.PunishmentType;
 import net.anmlmc.SCCore.Ranks.Rank;
 import net.anmlmc.SCCore.Utils.Fanciful.FancyMessage;
 import org.bukkit.Bukkit;
@@ -36,15 +38,35 @@ public class SCPlayerManager implements Listener {
     private Main instance;
     private List<UUID> shoutCooldowns;
     private Map<Player, LockpickRunnable> lockpicking;
-    private HashSet<SCPlayer> scPlayers;
+    private Map<Player, SCPlayer> scPlayers;
+    private Map<Player, List<PunishmentEntry>> cachedPunishments;
+    private Map<Player, Rank> cachedRanks;
     private HashMap<UUID, PermissionAttachment> permissions;
 
     public SCPlayerManager(Main instance) {
         this.instance = instance;
         shoutCooldowns = new ArrayList<>();
-        scPlayers = new HashSet<>();
+        scPlayers = new HashMap<>();
+        cachedPunishments = new HashMap<>();
+        cachedRanks = new HashMap<>();
         permissions = new HashMap<>();
         lockpicking = new HashMap<>();
+    }
+
+    public List<UUID> getShoutCooldowns() {
+        return shoutCooldowns;
+    }
+
+    public Map<Player, LockpickRunnable> getLockpicking() {
+        return lockpicking;
+    }
+
+    public Map<Player, Rank> getCachedRanks() {
+        return cachedRanks;
+    }
+
+    public Map<Player, List<PunishmentEntry>> getCachedPunishments() {
+        return cachedPunishments;
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -53,8 +75,14 @@ public class SCPlayerManager implements Listener {
 
         SCPlayer scPlayer = getSCPlayer(player);
 
-        if (!scPlayer.hasRank())
-            scPlayer.reset();
+        for (PunishmentEntry entry : scPlayer.getPunishments(PunishmentType.BAN)) {
+            if (!entry.hasExpired()) {
+                String punisher = (entry.getPunisher() != null) ? getSCPlayer(Bukkit.getPlayer(entry.getPunisher()))
+                        .getTag() : "§6Console";
+                player.getPlayer().kickPlayer("§4You have been permanently banned!\n" + entry.getReason() + "§4- " +
+                        punisher);
+            }
+        }
 
         e.setJoinMessage(null);
         FancyMessage message = new FancyMessage(scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §ehas logged in.");
@@ -82,7 +110,7 @@ public class SCPlayerManager implements Listener {
     @EventHandler
     public void onPlayerCommandPre(final PlayerCommandPreprocessEvent e) {
         if (getSCPlayer(e.getPlayer()).isCombatTagged()) {
-            if(e.getMessage().equalsIgnoreCase("ct") || e.getMessage().equalsIgnoreCase("combattime"))
+            if (e.getMessage().equalsIgnoreCase("ct") || e.getMessage().equalsIgnoreCase("combattime"))
                 return;
 
             e.setCancelled(true);
@@ -114,8 +142,8 @@ public class SCPlayerManager implements Listener {
             return;
         }
 
-            getSCPlayer(player).combatTag();
-            getSCPlayer(target).combatTag();
+        getSCPlayer(player).combatTag();
+        getSCPlayer(target).combatTag();
 
     }
 
@@ -128,9 +156,9 @@ public class SCPlayerManager implements Listener {
         if (!(e.getEntity().getKiller() instanceof Player))
             return;
 
-        Player playerKilled = (Player) e.getEntity();
+        Player playerKilled = e.getEntity();
         SCPlayer killed = getSCPlayer(playerKilled);
-        Player playerKiller = (Player) e.getEntity().getKiller();
+        Player playerKiller = e.getEntity().getKiller();
         SCPlayer killer = getSCPlayer(playerKiller);
 
         killed.setDeaths(killed.getDeaths() + 1);
@@ -173,38 +201,61 @@ public class SCPlayerManager implements Listener {
     }
 
     public SCPlayer getSCPlayer(Player player) {
-        for (SCPlayer p : scPlayers) {
-            if (p != null && p.getBase().equals(player)) {
-                return p;
-            }
+        if (scPlayers.containsKey(player))
+            return scPlayers.get(player);
+
+        if (player.isOnline()) {
+            addSCPlayer(player);
+            return getSCPlayer(player);
         }
 
-        addSCPlayer(player);
-        return getSCPlayer(player);
+        return new SCPlayer(player);
     }
 
     public void addSCPlayer(Player player) {
-        scPlayers.add(new SCPlayer(player));
+        if (scPlayers.containsKey(player))
+            return;
 
-        if (!getSCPlayer(player).hasRank())
-            getSCPlayer(player).reset();
-        permissions.put(player.getUniqueId(), getSCPlayer(player).permissionAttachment());
+        SCPlayer scPlayer = new SCPlayer(player);
+
+        scPlayers.put(player, scPlayer);
+
+        if (!scPlayer.hasSQLRank()) {
+            cachedRanks.put(player, Rank.DEFAULT);
+        } else {
+            cachedRanks.put(player, scPlayer.getSQLRank());
+        }
+
+        cachedPunishments.put(player, scPlayer.getSQLPunishments());
+
+        permissions.put(player.getUniqueId(), scPlayer.permissionAttachment());
     }
 
     public void removeSCPlayer(SCPlayer scPlayer) {
-        if (permissions.containsKey(scPlayer.getBase())) {
-            scPlayer.getBase().removeAttachment(permissions.get(scPlayer.getBase()));
-            permissions.remove(scPlayer.getBase());
-        }
 
-        if (scPlayers.contains(scPlayer)) {
-            scPlayers.remove(scPlayer);
-        }
+        Player player = scPlayer.getBase();
+
+        if (!player.isOnline())
+            return;
+
+        player.removeAttachment(permissions.get(player));
+        permissions.remove(player);
+
+        scPlayer.setSQLRank(cachedRanks.get(player));
+        scPlayer.setSQLPunishments(cachedPunishments.get(player));
+
+        scPlayers.remove(scPlayer.getBase());
     }
 
     public void loadSCPlayers() {
-        scPlayers.clear();
+
+        for (SCPlayer scPlayer : scPlayers.values()) {
+            removeSCPlayer(scPlayer);
+        }
+
         permissions.clear();
+        cachedRanks.clear();
+        cachedPunishments.clear();
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             addSCPlayer(player);
@@ -233,34 +284,10 @@ public class SCPlayerManager implements Listener {
         }
     }
 
-    public void broadcast(FancyMessage message, String permission) {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.hasPermission(permission)) {
-                message.send(p);
-            }
-        }
-    }
-
     public void broadcast(String message) {
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.sendMessage(message);
         }
-    }
-
-    public void broadcast(String message, String permission) {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.hasPermission(permission)) {
-                p.sendMessage(message);
-            }
-        }
-    }
-
-    public List<UUID> getShoutCooldowns() {
-        return shoutCooldowns;
-    }
-
-    public Map<Player, LockpickRunnable> getLockpicking() {
-        return lockpicking;
     }
 
     public Rank getRankById(int id) {
@@ -276,8 +303,8 @@ public class SCPlayerManager implements Listener {
     }
 
     public void updatePermissions(Rank rank) {
-        for (SCPlayer scPlayer : scPlayers) {
-            if (scPlayer.getRank().equals(rank)) {
+        for (SCPlayer scPlayer : scPlayers.values()) {
+            if (scPlayer.getCachedRank().equals(rank)) {
                 if (permissions.containsKey(scPlayer.getBase().getUniqueId())) {
                     permissions.replace(scPlayer.getBase().getUniqueId(), scPlayer.permissionAttachment());
                 }

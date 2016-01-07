@@ -90,7 +90,7 @@ public class DuelCommand implements CommandExecutor {
                 scTarget.addDuelRequest(player);
 
                 FancyMessage message = new FancyMessage("§aYou have sent a duel request to ").then(scTarget.getTag()
-                ).tooltip(scTarget.getHoverText()).then("§a.");
+                ).tooltip(scTarget.getHoverText()).then("§a which will expire in 5 minutes.");
                 message.send(sender);
 
                 message = new FancyMessage("§aYou have received a duel request from ").then(scPlayer.getTag())
@@ -150,26 +150,26 @@ public class DuelCommand implements CommandExecutor {
                     return false;
                 }
 
-                if(instance.getEssentials().getUser(target).isGodModeEnabled()) {
+                if (instance.getEssentials().getUser(target).isGodModeEnabled()) {
                     FancyMessage message = new FancyMessage(scTarget.getTag()).tooltip(scTarget.getHoverText()).then
                             (" §chas god-mode enabled which prohibits you from dueling each other.");
                     message.send(sender);
                     return false;
                 }
 
-                if(instance.getEssentials().getUser(player).isGodModeEnabled()) {
+                if (instance.getEssentials().getUser(player).isGodModeEnabled()) {
                     sender.sendMessage("§cYou must disable god-mode prior to accepting a duel request.");
                     return false;
                 }
 
-                if(target.getGameMode().equals(GameMode.CREATIVE)) {
+                if (target.getGameMode().equals(GameMode.CREATIVE)) {
                     FancyMessage message = new FancyMessage(scTarget.getTag()).tooltip(scTarget.getHoverText()).then
                             (" §cis currently in creative which prohibits you from dueling each other.");
                     message.send(sender);
                     return false;
                 }
 
-                if(player.getGameMode().equals(GameMode.CREATIVE)) {
+                if (player.getGameMode().equals(GameMode.CREATIVE)) {
                     sender.sendMessage("§cYou are not allowed to be in creative prior to accepting a duel request.");
                     return false;
                 }

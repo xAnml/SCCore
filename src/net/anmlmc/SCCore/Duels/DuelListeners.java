@@ -66,7 +66,7 @@ public class DuelListeners implements Listener {
     public void onPlayerDamageByPlayer(final EntityDamageByEntityEvent e) {
         if (e.getEntity() instanceof Player == false || e.getDamager() instanceof Player == false) return;
 
-        if (arena.getArenaPlayers().contains((Player) e.getEntity()) && !arena.getArenaPlayers().contains((Player) e.getDamager()))
+        if (arena.getArenaPlayers().contains(e.getEntity()) && !arena.getArenaPlayers().contains(e.getDamager()))
             e.setCancelled(true);
     }
 
@@ -80,7 +80,7 @@ public class DuelListeners implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerCommandPre(final PlayerCommandPreprocessEvent e) {
 
-            if (arena.getArenaPlayers().contains(e.getPlayer())) {
+        if (arena.getArenaPlayers().contains(e.getPlayer())) {
             e.setCancelled(true);
             e.getPlayer().sendMessage("§cYou are not permitted to execute commands while dueling.");
         }

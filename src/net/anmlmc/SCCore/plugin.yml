@@ -16,3 +16,4 @@ commands:
   spectate:
   combattime:
     aliases: [ct]
+  ban:

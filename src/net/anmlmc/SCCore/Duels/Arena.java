@@ -68,7 +68,7 @@ public class Arena {
     }
 
     public boolean isValidLocation(ArenaLocationType type) {
-        return getLocation(type) == null ? false : true;
+        return getLocation(type) != null;
     }
 
     public World getWorld() {
@@ -131,7 +131,7 @@ public class Arena {
     }
 
     protected void endMatch(final Player loser) {
-        if(task != null) {
+        if (task != null) {
             task.cancel();
             task = null;
         }

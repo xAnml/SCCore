@@ -50,12 +50,7 @@ public class RankCommand implements CommandExecutor {
                 return false;
             }
 
-            SCPlayer scPlayer;
-            if (user.getBase().isOnline()) {
-                scPlayer = scPlayerManager.getSCPlayer(user.getBase());
-            } else {
-                scPlayer = new SCPlayer(user.getBase());
-            }
+            SCPlayer scPlayer = scPlayerManager.getSCPlayer(user.getBase());
 
             if (args[0].equalsIgnoreCase("set")) {
 
@@ -81,13 +76,14 @@ public class RankCommand implements CommandExecutor {
                 }
 
                 scPlayerManager.staff(message);
-                scPlayer.setRank(rank);
-                instance.getLogger().info(sender.getName() + " has set " + scPlayer.getBase().getName() + " rank to " + rank.name());
+                scPlayer.setCachedRank(rank);
+                instance.getLogger().info(sender.getName() + " has set " + scPlayer.getBase().getName() + "'s rank to" +
+                        " " + rank.name());
                 scPlayerManager.updatePermissions(scPlayer.getBase());
                 return true;
             } else if (args[0].equalsIgnoreCase("get")) {
                 FancyMessage message = new FancyMessage("§aThe player ").then("§a" + player.getName()).tooltip(scPlayer
-                        .getHoverText()).then("§a's rank is " + scPlayer.getRank().getName() + "§a.");
+                        .getHoverText()).then("§a's rank is " + scPlayer.getCachedRank().getName() + "§a.");
                 message.send(sender);
                 return true;
             } else {

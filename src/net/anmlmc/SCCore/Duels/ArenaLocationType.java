@@ -9,6 +9,6 @@ public enum ArenaLocationType {
     SecondarySpawn,
     Spectate,
     PrimaryCorner,
-    SecondaryCorner;
+    SecondaryCorner
 
 }

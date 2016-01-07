@@ -60,12 +60,7 @@ public class PermsCommand implements CommandExecutor {
                     return false;
                 }
 
-                SCPlayer scPlayer;
-                if (user.getBase().isOnline()) {
-                    scPlayer = scPlayerManager.getSCPlayer(user.getBase());
-                } else {
-                    scPlayer = new SCPlayer(user.getBase());
-                }
+                SCPlayer scPlayer = scPlayerManager.getSCPlayer(player.getPlayer());
 
                 if (args[0].equalsIgnoreCase("p:add")) {
                     boolean task = scPlayer.addPersonalPermission(args[2]);

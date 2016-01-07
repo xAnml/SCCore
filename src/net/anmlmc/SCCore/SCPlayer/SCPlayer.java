@@ -1,10 +1,11 @@
 package net.anmlmc.SCCore.SCPlayer;
 
+import com.earth2me.essentials.Console;
 import com.earth2me.essentials.PlayerExtension;
-import com.massivecraft.factions.entity.Faction;
-import com.massivecraft.factions.entity.MPlayerColl;
 import net.anmlmc.SCCore.Main;
 import net.anmlmc.SCCore.MySQL.MySQL;
+import net.anmlmc.SCCore.Punishments.PunishmentEntry;
+import net.anmlmc.SCCore.Punishments.PunishmentType;
 import net.anmlmc.SCCore.Ranks.Rank;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -43,6 +44,7 @@ public class SCPlayer extends PlayerExtension {
         combatTime = 0;
     }
 
+    /* SHOUT */
     public boolean isShoutCooldowned() {
         return scPlayerManager.getShoutCooldowns().contains(player.getUniqueId());
     }
@@ -60,7 +62,24 @@ public class SCPlayer extends PlayerExtension {
         }
     }
 
-    public Rank getRank() {
+    /* RANKS */
+    public Rank getCachedRank() {
+        if (scPlayerManager.getCachedRanks().containsKey(player))
+            return scPlayerManager.getCachedRanks().get(player);
+
+        return getSQLRank();
+    }
+
+    public void setCachedRank(Rank rank) {
+        if (scPlayerManager.getCachedRanks().containsKey(player)) {
+            scPlayerManager.getCachedRanks().replace(player, rank);
+            return;
+        }
+
+        setSQLRank(rank);
+    }
+
+    public Rank getSQLRank() {
 
         try {
             ResultSet resultSet = mySQL.getResultSet("SELECT Rank FROM SCPlayerInfo WHERE UUID='" + player.getUniqueId
@@ -76,22 +95,22 @@ public class SCPlayer extends PlayerExtension {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        return Rank.DEFAULT;
     }
 
-    public void setRank(Rank rank) {
+    public void setSQLRank(Rank rank) {
 
-        if (!hasRank()) {
+        if (!hasSQLRank()) {
             try {
 
                 mySQL.executeUpdate("INSERT INTO `SCPlayerInfo`(`UUID`, `Rank`) VALUES ('" + player.getUniqueId() +
-                        "','" + rank.name().toUpperCase() + "')");
+                        "','" + rank.name() + "')");
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         } else {
             try {
-                mySQL.executeUpdate("UPDATE SCPlayerInfo SET Rank='" + rank.name().toUpperCase() + "' WHERE UUID='" +
+                mySQL.executeUpdate("UPDATE SCPlayerInfo SET Rank='" + rank.name() + "' WHERE UUID='" +
                         player.getUniqueId() + "'");
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -99,8 +118,7 @@ public class SCPlayer extends PlayerExtension {
         }
     }
 
-    public boolean hasRank() {
-
+    public boolean hasSQLRank() {
         try {
             ResultSet rs = mySQL.getResultSet("SELECT Rank FROM SCPlayerInfo WHERE UUID='" + player.getUniqueId() +
                     "'");
@@ -112,6 +130,7 @@ public class SCPlayer extends PlayerExtension {
         return false;
     }
 
+    /* PERMISSIONS */
     public List<String> getPersonalPermissions() {
         List<String> permissions = new ArrayList<>();
         String path = "Permissions.Player." + player.getUniqueId();
@@ -129,7 +148,7 @@ public class SCPlayer extends PlayerExtension {
     public List<String> getRankPermissions() {
         List<String> permissions = new ArrayList<>();
 
-        for (int i = getRank().getId(); i >= 0; i--) {
+        for (int i = getCachedRank().getId(); i >= 0; i--) {
             for (String permission : scPlayerManager.getRankById(i).getPermissions()) {
                 if (!permissions.contains(permission.toLowerCase()))
                     permissions.add(permission.toLowerCase());
@@ -188,9 +207,10 @@ public class SCPlayer extends PlayerExtension {
         return attachment;
     }
 
+    /* TAG */
     public String getTag() {
-        if (getRank() != null)
-            return getRank().getTag().replace("%s", player.getName());
+        if (getCachedRank() != null)
+            return getCachedRank().getTag().replace("%s", player.getName());
         return "§f" + player.getName();
     }
 
@@ -211,6 +231,7 @@ public class SCPlayer extends PlayerExtension {
                 "   §aW/L: §f" + getWL());
     }
 
+    /* STATS */
     public int getKills() {
         try {
             ResultSet resultSet = mySQL.getResultSet("SELECT Kills FROM SCPlayerInfo WHERE UUID='" + player.getUniqueId() + "'");
@@ -253,7 +274,6 @@ public class SCPlayer extends PlayerExtension {
         }
     }
 
-
     public double getKD() {
         if (getDeaths() == 0) {
             return getKills();
@@ -264,36 +284,15 @@ public class SCPlayer extends PlayerExtension {
         return Double.valueOf(df.format(ratio));
     }
 
-    public void reset() {
-        setRank(Rank.DEFAULT);
-    }
-
-    public Faction getFaction() {
-        Faction faction = MPlayerColl.get().get(player).getFaction();
-        return faction;
-    }
-
-
-    public double getPower() {
-        return getFaction().isNone() ? 10.0 : MPlayerColl.get().get(player).getPowerRounded();
-    }
-
-    public double getMaxPower() {
-        return getFaction().isNone() ? 10.0 : MPlayerColl.get().get(player).getPowerMaxRounded();
-    }
-
+    /* LOCKPICKS */
     public boolean isLockpicking() {
-        if (scPlayerManager.getLockpicking().containsKey(player))
-            return true;
-        return false;
+        return scPlayerManager.getLockpicking().containsKey(player);
     }
 
     public boolean lockpickAttempt() {
 
         int random = (int) (Math.random() * 100) + 1;
-        if (random <= getRank().getLockpickChance())
-            return true;
-        return false;
+        return random <= getCachedRank().getLockpickChance();
     }
 
     public Map<Player, BukkitRunnable> getDuelRequests() {
@@ -324,6 +323,7 @@ public class SCPlayer extends PlayerExtension {
         duelRequests.remove(target);
     }
 
+    /* DUEL ARENA STATS */
     public int getWins() {
         try {
             ResultSet resultSet = mySQL.getResultSet("SELECT Wins FROM SCPlayerInfo WHERE UUID='" + player.getUniqueId()
@@ -378,6 +378,7 @@ public class SCPlayer extends PlayerExtension {
         return Double.valueOf(df.format(ratio));
     }
 
+    /* COMBAT */
     public boolean isCombatTagged() {
         return combatTagged;
     }
@@ -421,6 +422,78 @@ public class SCPlayer extends PlayerExtension {
             player.sendMessage("§eYou have left combat.");
         }
     }
+
+    /* PUNISHMENTS */
+
+    public List<PunishmentEntry> getSQLPunishments() {
+        List<PunishmentEntry> list = new ArrayList<>();
+
+        try {
+            ResultSet resultSet = mySQL.getResultSet("SELECT * FROM SCPunishments WHERE Target='" + player.getUniqueId() + "'");
+
+            while (resultSet.next()) {
+                PunishmentType type = PunishmentType.valueOf(resultSet.getString("Type"));
+                UUID target = UUID.fromString(resultSet.getString("Target"));
+                UUID punisher = !resultSet.getString("Punisher").equals(Console.NAME) ? UUID.fromString(resultSet
+                        .getString("Punisher")) : null;
+                long created = resultSet.getLong("Created");
+                long expires = resultSet.getLong("Expires");
+                String reason = resultSet.getString("Reason");
+
+                PunishmentEntry entry = new PunishmentEntry(instance, type, target, punisher, created, expires, reason);
+                entry.setExecuted(true);
+                list.add(entry);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public void setSQLPunishments(List<PunishmentEntry> entries) {
+        for (PunishmentEntry entry : entries) {
+            entry.execute();
+        }
+    }
+
+    public List<PunishmentEntry> getCachedPunishments() {
+        if (scPlayerManager.getCachedPunishments().containsKey(player))
+            return scPlayerManager.getCachedPunishments().get(player);
+
+        return getSQLPunishments();
+    }
+
+    public void setCachedPunishments(List<PunishmentEntry> entries) {
+
+        if (!player.isOnline()) {
+            setSQLPunishments(entries);
+            return;
+        }
+
+        getCachedPunishments().clear();
+
+        for (PunishmentEntry entry : entries) {
+            getCachedPunishments().add(entry);
+        }
+    }
+
+    public List<PunishmentEntry> getPunishments(PunishmentType type) {
+        List<PunishmentEntry> list = new ArrayList<>();
+
+        if (player.isOnline()) {
+            for (PunishmentEntry entry : getCachedPunishments())
+                list.add(entry);
+        } else {
+            for (PunishmentEntry entry : getSQLPunishments()) {
+                if (entry.getType().equals(type))
+                    list.add(entry);
+            }
+        }
+
+        return list;
+    }
+
 
 }
 

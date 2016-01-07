@@ -34,6 +34,7 @@ public class MySQL {
 
             Class.forName("com.mysql.jdbc.Driver");
             connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, username, password);
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -49,10 +50,11 @@ public class MySQL {
         return statement.executeQuery();
     }
 
-    public void executeUpdate(String qry) throws SQLException {
+    public int executeUpdate(String qry) throws SQLException {
 
         PreparedStatement statement = connection.prepareStatement(qry);
-        statement.executeUpdate();
+        int task = statement.executeUpdate();
         statement.close();
+        return task;
     }
 }

@@ -9,6 +9,7 @@ import net.anmlmc.SCCore.Duels.Commands.SpectateCommand;
 import net.anmlmc.SCCore.Duels.DuelListeners;
 import net.anmlmc.SCCore.Lockpicks.LockpickListeners;
 import net.anmlmc.SCCore.MySQL.MySQL;
+import net.anmlmc.SCCore.Punishments.Commands.BanCommand;
 import net.anmlmc.SCCore.Ranks.Commands.PermsCommand;
 import net.anmlmc.SCCore.Ranks.Commands.RankCommand;
 import net.anmlmc.SCCore.SCPlayer.Commands.CombatTimeCommand;
@@ -70,13 +71,15 @@ public class Main extends JavaPlugin implements Listener {
 
         scPlayerManager.loadSCPlayers();
 
-        this.getLogger().info("[SCGeneral] Plugin has been enabled.");
+        this.getLogger().info("[SCCore] Plugin has been enabled.");
     }
 
     @Override
     public void onDisable() {
 
         instance = null;
+
+        this.getLogger().info("[SCCore] Plugin has been disabled.");
 
     }
 
@@ -97,6 +100,7 @@ public class Main extends JavaPlugin implements Listener {
         getCommand("duel").setExecutor(new DuelCommand(this));
         getCommand("spectate").setExecutor(new SpectateCommand(this));
         getCommand("combattime").setExecutor(new CombatTimeCommand(this));
+        getCommand("ban").setExecutor(new BanCommand(this));
 
     }
 
@@ -108,6 +112,6 @@ public class Main extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onServerListPing(ServerListPingEvent event) {
-        event.setMotd("                §c§lSensation§4§lCraft\n             §a§lCatBlocker 2.0 Installed");
+        event.setMotd("                §c§lSensation§4§lCraft");
     }
 }

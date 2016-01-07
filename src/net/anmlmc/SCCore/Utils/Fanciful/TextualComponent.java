@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-;
-
 /**
  * Represents a textual component of a message part.
  * This can be used to not only represent string literals in a JSON message,
@@ -42,7 +40,7 @@ public abstract class TextualComponent implements Cloneable {
     }
 
     static boolean isTranslatableText(TextualComponent component) {
-        return component instanceof ComplexTextTypeComponent && ((ComplexTextTypeComponent) component).getKey().equals("translate");
+        return component instanceof ComplexTextTypeComponent && component.getKey().equals("translate");
     }
 
     /**
@@ -239,7 +237,7 @@ public abstract class TextualComponent implements Cloneable {
                 if (valEntry.getKey().equals("key")) {
                     key = (String) valEntry.getValue();
                 } else if (valEntry.getKey().startsWith("value.")) {
-                    value.put(((String) valEntry.getKey()).substring(6) /* Strips out the value prefix */, valEntry.getValue().toString());
+                    value.put(valEntry.getKey().substring(6) /* Strips out the value prefix */, valEntry.getValue().toString());
                 }
             }
             return new ComplexTextTypeComponent(key, value);
