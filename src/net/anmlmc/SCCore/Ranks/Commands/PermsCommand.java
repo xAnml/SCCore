@@ -2,6 +2,7 @@ package net.anmlmc.SCCore.Ranks.Commands;
 
 import com.earth2me.essentials.User;
 import net.anmlmc.SCCore.Main;
+import net.anmlmc.SCCore.Ranks.PermissionsManager;
 import net.anmlmc.SCCore.Ranks.Rank;
 import net.anmlmc.SCCore.SCPlayer.SCPlayer;
 import net.anmlmc.SCCore.SCPlayer.SCPlayerManager;
@@ -19,10 +20,12 @@ import java.util.List;
 public class PermsCommand implements CommandExecutor {
 
     Main instance;
+    PermissionsManager permissionsManager;
     SCPlayerManager scPlayerManager;
 
     public PermsCommand(Main instance) {
         this.instance = instance;
+        permissionsManager = instance.getPermissionsManager();
         scPlayerManager = instance.getSCPlayerManager();
     }
 
@@ -47,8 +50,7 @@ public class PermsCommand implements CommandExecutor {
             return false;
         }
 
-        if (args[0].equalsIgnoreCase("p:get") || args[0].equalsIgnoreCase("p:add") || args[0].equalsIgnoreCase
-                ("p:remove")) {
+        if (args[0].equalsIgnoreCase("p:get") || args[0].equalsIgnoreCase("p:add") || args[0].equalsIgnoreCase("p:remove")) {
 
             OfflinePlayer player = instance.getServer().getOfflinePlayer(args[1]);
 
@@ -60,27 +62,27 @@ public class PermsCommand implements CommandExecutor {
                     return false;
                 }
 
-                SCPlayer scPlayer = scPlayerManager.getSCPlayer(player.getPlayer());
+                SCPlayer scPlayer = scPlayerManager.getSCPlayer(player.getUniqueId());
 
                 if (args[0].equalsIgnoreCase("p:add")) {
-                    boolean task = scPlayer.addPersonalPermission(args[2]);
+                    boolean task = permissionsManager.addPermission(player.getUniqueId(), args[2]);
 
                     if (task) {
-                        FancyMessage message = new FancyMessage("§aThe permission node '" + args[2] + "' has been added " +
+                        FancyMessage message = new FancyMessage("§aThe permission node '" + args[2].toLowerCase() + "' has been added " +
                                 "to ").then(scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then("§a.");
                         message.send(sender);
 
-                        instance.getLogger().info(sender.getName() + " has added the permission node '" + args[2] +
-                                "' to the player " + scPlayer.getBase().getName() + ".");
+                        instance.getLogger().info(sender.getName() + " has added the permission node '" + args[2].toLowerCase() +
+                                "' to the player " + player.getName() + ".");
                         return true;
                     } else {
                         FancyMessage message = new FancyMessage("§cThe player ").then(scPlayer.getTag()).tooltip
-                                (scPlayer.getHoverText()).then(" §calready has the permission node '" + args[2] + "'.");
+                                (scPlayer.getHoverText()).then(" §calready has the permission node '" + args[2].toLowerCase() + "'.");
                         message.send(sender);
                         return false;
                     }
                 } else if (args[0].equalsIgnoreCase("p:remove")) {
-                    boolean task = scPlayer.removePersonalPermission(args[2]);
+                    boolean task = permissionsManager.removePermission(player.getUniqueId(), args[2]);
 
                     if (task) {
                         FancyMessage message = new FancyMessage("§aThe permission node '" + args[2] + "' has been " +
@@ -88,7 +90,7 @@ public class PermsCommand implements CommandExecutor {
                         message.send(sender);
 
                         instance.getLogger().info(sender.getName() + " has removed the permission node '" + args[2] +
-                                "' from the player " + scPlayer.getBase().getName() + ".");
+                                "' from the player " + player.getName() + ".");
                         return true;
                     } else {
                         FancyMessage message = new FancyMessage(scPlayer.getTag()).tooltip(scPlayer.getHoverText())
@@ -98,13 +100,11 @@ public class PermsCommand implements CommandExecutor {
                     }
 
                 } else {
-                    List<String> permissions = scPlayer.getPersonalPermissions();
+                    List<String> permissions = permissionsManager.getPermissions(player.getUniqueId());
 
                     if (permissions.isEmpty()) {
                         FancyMessage message = new FancyMessage("§cThe player ").then(scPlayer.getTag()).tooltip
-                                (scPlayer
-                                        .getHoverText())
-                                .then(" §chas no personal permissions.");
+                                (scPlayer.getHoverText()).then(" §chas no personal permissions.");
                         message.send(sender);
                         return false;
                     } else {
@@ -133,7 +133,7 @@ public class PermsCommand implements CommandExecutor {
             }
 
             if (args[0].equalsIgnoreCase("r:add")) {
-                boolean task = rank.addPermission(args[2]);
+                boolean task = permissionsManager.addPermission(rank, args[2]);
 
                 if (task) {
                     sender.sendMessage("§aThe permission node '" + args[2].toLowerCase() + "' has been added to the " +
@@ -148,7 +148,7 @@ public class PermsCommand implements CommandExecutor {
                     return false;
                 }
             } else if (args[0].equalsIgnoreCase("r:remove")) {
-                boolean task = rank.removePermission(args[2]);
+                boolean task = permissionsManager.removePermission(rank, args[2]);
 
                 if (task) {
                     sender.sendMessage("§aThe permission node '" + args[2].toLowerCase() + "' has been removed from " +
@@ -163,7 +163,7 @@ public class PermsCommand implements CommandExecutor {
                     return false;
                 }
             } else {
-                List<String> permissions = rank.getPermissions();
+                List<String> permissions = permissionsManager.getPermissions(rank);
 
                 if (permissions.isEmpty()) {
                     sender.sendMessage("§cThe rank " + rank.getName() + " §chas no permissions.");

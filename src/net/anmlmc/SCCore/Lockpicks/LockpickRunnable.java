@@ -3,11 +3,14 @@ package net.anmlmc.SCCore.Lockpicks;
 import net.anmlmc.SCCore.Main;
 import net.anmlmc.SCCore.SCPlayer.SCPlayer;
 import net.anmlmc.SCCore.SCPlayer.SCPlayerManager;
+import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.UUID;
 
 /**
  * Created by Anml on 12/31/15.
@@ -18,26 +21,27 @@ public class LockpickRunnable extends BukkitRunnable {
     private SCPlayerManager scPlayerManager;
     private SCPlayer scPlayer;
     private Block block;
-    private Player player;
+    private UUID uuid;
 
-    public LockpickRunnable(Main instance, Block block, SCPlayer scPlayer, int counter) {
+    public LockpickRunnable(Main instance, Block block, UUID uuid, int counter) {
         this.counter = counter;
         this.instance = instance;
         scPlayerManager = instance.getSCPlayerManager();
-        this.scPlayer = scPlayer;
         this.block = block;
-        player = scPlayer.getBase();
+        this.uuid = uuid;
+        scPlayer = scPlayerManager.getSCPlayer(uuid);
     }
 
     @Override
     public void run() {
         if (counter == 5) {
+            Player player = Bukkit.getPlayer(uuid);
             if (scPlayer.lockpickAttempt()) {
                 block.breakNaturally();
                 player.sendMessage("§aThe luck was in your favor, resulting in a successful lockpick.");
             } else
                 player.sendMessage("§cThe luck was not in your favor, resulting in an unsuccessful lockpick.");
-            final LockpickRunnable task = scPlayerManager.getLockpicking().remove(player);
+            final LockpickRunnable task = scPlayerManager.getLockpicking().remove(player.getUniqueId());
             if (task != null) {
                 task.cancel();
             }

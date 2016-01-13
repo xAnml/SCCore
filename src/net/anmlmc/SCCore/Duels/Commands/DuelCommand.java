@@ -16,6 +16,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.UUID;
+
 /**
  * Created by Anml on 1/3/16.
  */
@@ -41,7 +43,7 @@ public class DuelCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        SCPlayer scPlayer = scPlayerManager.getSCPlayer(player);
+        SCPlayer scPlayer = scPlayerManager.getSCPlayer(player.getUniqueId());
 
         if (!sender.hasPermission("sccore.duel")) {
             sender.sendMessage("§cYou do not have permission to execute this command.");
@@ -71,7 +73,7 @@ public class DuelCommand implements CommandExecutor {
                 return false;
             }
 
-            SCPlayer scTarget = scPlayerManager.getSCPlayer(target);
+            SCPlayer scTarget = scPlayerManager.getSCPlayer(target.getUniqueId());
 
             if (args[0].equalsIgnoreCase("request")) {
 
@@ -87,7 +89,7 @@ public class DuelCommand implements CommandExecutor {
                     return false;
                 }
 
-                scTarget.addDuelRequest(player);
+                scTarget.addDuelRequest(player.getUniqueId());
 
                 FancyMessage message = new FancyMessage("§aYou have sent a duel request to ").then(scTarget.getTag()
                 ).tooltip(scTarget.getHoverText()).then("§a which will expire in 5 minutes.");
@@ -99,7 +101,7 @@ public class DuelCommand implements CommandExecutor {
                 message.send(target);
                 return true;
             } else if (args[0].equalsIgnoreCase("accept")) {
-                if (!scPlayer.getDuelRequests().containsKey(target)) {
+                if (!scPlayer.getDuelRequests().containsKey(target.getUniqueId())) {
                     FancyMessage message = new FancyMessage("§cYou have not received a duel request from ").then
                             (scTarget.getTag()).tooltip(scTarget.getHoverText()).then("§c.");
                     message.send(sender);
@@ -174,7 +176,7 @@ public class DuelCommand implements CommandExecutor {
                     return false;
                 }
 
-                scPlayer.removeDuelRequest(target);
+                scPlayer.removeDuelRequest(target.getUniqueId());
                 arena.startMatch(player, target);
 
                 FancyMessage message = new FancyMessage(scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" " +
@@ -186,14 +188,14 @@ public class DuelCommand implements CommandExecutor {
                 message.send(sender);
                 return true;
             } else if (args[0].equalsIgnoreCase("deny")) {
-                if (!scPlayer.getDuelRequests().containsKey(target)) {
+                if (!scPlayer.getDuelRequests().containsKey(target.getUniqueId())) {
                     FancyMessage message = new FancyMessage("§cYou have not received a duel request from ").then
                             (scTarget.getTag()).tooltip(scTarget.getHoverText()).then("§c.");
                     message.send(sender);
                     return false;
                 }
 
-                scPlayer.removeDuelRequest(target);
+                scPlayer.removeDuelRequest(target.getUniqueId());
 
                 FancyMessage message = new FancyMessage(scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" " +
                         "§chas declined your duel request.");
@@ -204,14 +206,14 @@ public class DuelCommand implements CommandExecutor {
                 message.send(sender);
                 return true;
             } else {
-                if (!scTarget.getDuelRequests().containsKey(player)) {
+                if (!scTarget.getDuelRequests().containsKey(player.getUniqueId())) {
                     FancyMessage message = new FancyMessage("§cYou have not sent a duel request to ").then
                             (scTarget.getTag()).tooltip(scTarget.getHoverText()).then("§c.");
                     message.send(sender);
                     return false;
                 }
 
-                scTarget.removeDuelRequest(player);
+                scTarget.removeDuelRequest(player.getUniqueId());
 
                 FancyMessage message = new FancyMessage(scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" " +
                         "§ahas cancelled his duel request.");
@@ -225,7 +227,7 @@ public class DuelCommand implements CommandExecutor {
         } else if (args[0].equalsIgnoreCase("requests")) {
             if (scPlayer.getDuelRequests().size() != 0) {
                 sender.sendMessage("§aDuel Requests:");
-                for (Player p : scPlayer.getDuelRequests().keySet()) {
+                for (UUID p : scPlayer.getDuelRequests().keySet()) {
                     SCPlayer scP = scPlayerManager.getSCPlayer(p);
                     FancyMessage message = new FancyMessage("§f   - ").then(scP.getTag()).tooltip(scP.getHoverText());
                     message.send(sender);

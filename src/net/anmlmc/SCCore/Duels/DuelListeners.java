@@ -55,9 +55,9 @@ public class DuelListeners implements Listener {
         }
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            SCPlayer scPlayer = scPlayerManager.getSCPlayer(player);
+            SCPlayer scPlayer = scPlayerManager.getSCPlayer(player.getUniqueId());
             if (scPlayer.getDuelRequests().containsKey(e.getPlayer())) {
-                scPlayer.removeDuelRequest(e.getPlayer());
+                scPlayer.removeDuelRequest(e.getPlayer().getUniqueId());
             }
         }
     }

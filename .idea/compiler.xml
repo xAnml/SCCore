@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <excludeFromCompile>
-      <file url="file://$PROJECT_DIR$/src/net/anmlmc/SCCore/Lockpicks/LockpickListener.java" />
-      <file url="file://$PROJECT_DIR$/src/net/anmlmc/SCCore/Ranks/Commands/PermsCommand.java" />
-      <file url="file://$PROJECT_DIR$/src/net/anmlmc/SCCore/Ranks/Commands/RankCommand.java" />
-      <file url="file://$PROJECT_DIR$/src/net/anmlmc/SCCore/Utils/Fanciful/ArrayWrapper.java" />
-    </excludeFromCompile>
     <resourceExtensions />
     <wildcardResourcePatterns>
       <entry name="!?*.java" />

@@ -9,11 +9,14 @@ import net.anmlmc.SCCore.Duels.Commands.SpectateCommand;
 import net.anmlmc.SCCore.Duels.DuelListeners;
 import net.anmlmc.SCCore.Lockpicks.LockpickListeners;
 import net.anmlmc.SCCore.MySQL.MySQL;
-import net.anmlmc.SCCore.Punishments.Commands.BanCommand;
 import net.anmlmc.SCCore.Ranks.Commands.PermsCommand;
 import net.anmlmc.SCCore.Ranks.Commands.RankCommand;
-import net.anmlmc.SCCore.SCPlayer.Commands.CombatTimeCommand;
+import net.anmlmc.SCCore.Ranks.PermissionsManager;
+import net.anmlmc.SCCore.Ranks.RankManager;
 import net.anmlmc.SCCore.SCPlayer.SCPlayerManager;
+import net.anmlmc.SCCore.Stats.StatListeners;
+import net.anmlmc.SCCore.Stats.StatsManager;
+import net.anmlmc.SCCore.Utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,6 +34,10 @@ public class Main extends JavaPlugin implements Listener {
     private Essentials essentials;
     private SCPlayerManager scPlayerManager;
     private ArenaManager arenaManager;
+    private RankManager rankManager;
+    private StatsManager statsManager;
+    private PermissionsManager permissionsManager;
+    private Utils utils;
     private MySQL mySQL;
 
     public static Main getInstance() {
@@ -41,14 +48,27 @@ public class Main extends JavaPlugin implements Listener {
         return mySQL;
     }
 
+    public RankManager getRankManager() {
+        return rankManager;
+    }
+
+    public PermissionsManager getPermissionsManager() {
+        return permissionsManager;
+    }
     public SCPlayerManager getSCPlayerManager() {
         return scPlayerManager;
     }
-
     public ArenaManager getArenaManager() {
         return arenaManager;
     }
 
+    public StatsManager getStatsManager() {
+        return statsManager;
+    }
+
+    public Utils getUtils() {
+        return utils;
+    }
     public Essentials getEssentials() {
         return essentials;
     }
@@ -90,6 +110,7 @@ public class Main extends JavaPlugin implements Listener {
         pm.registerEvents(this, this);
         pm.registerEvents(new LockpickListeners(this), this);
         pm.registerEvents(new DuelListeners(this), this);
+        pm.registerEvents(new StatListeners(this), this);
     }
 
     public void registerCommands() {
@@ -99,8 +120,6 @@ public class Main extends JavaPlugin implements Listener {
         getCommand("arena").setExecutor(new ArenaCommand(this));
         getCommand("duel").setExecutor(new DuelCommand(this));
         getCommand("spectate").setExecutor(new SpectateCommand(this));
-        getCommand("combattime").setExecutor(new CombatTimeCommand(this));
-        getCommand("ban").setExecutor(new BanCommand(this));
 
     }
 
@@ -108,6 +127,10 @@ public class Main extends JavaPlugin implements Listener {
         mySQL = new MySQL(this);
         scPlayerManager = new SCPlayerManager(this);
         arenaManager = new ArenaManager(this);
+        rankManager = new RankManager(this);
+        permissionsManager = new PermissionsManager(this);
+        statsManager = new StatsManager(this);
+        utils = new Utils();
     }
 
     @EventHandler

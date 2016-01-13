@@ -42,7 +42,7 @@ public class ShoutCommand implements CommandExecutor {
         String msg = sender.isOp() ? getMessage(args).replace('&', ChatColor.COLOR_CHAR) : getMessage(args);
 
         if (sender instanceof Player) {
-            SCPlayer scPlayer = scPlayerManager.getSCPlayer((Player) sender);
+            SCPlayer scPlayer = scPlayerManager.getSCPlayer(((Player) sender).getUniqueId());
 
             if (scPlayer.isShoutCooldowned()) {
                 sender.sendMessage("§cYou must wait a minimum of 15 seconds between shouts.");

@@ -2,10 +2,6 @@ package net.anmlmc.SCCore.Ranks;
 
 import net.anmlmc.SCCore.Main;
 import net.anmlmc.SCCore.SCPlayer.SCPlayerManager;
-import org.bukkit.configuration.file.FileConfiguration;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by kishanpatel on 12/6/15.
@@ -47,54 +43,6 @@ public enum Rank {
         this.alias = name();
         this.tag = tag;
         this.lockpickChance = lockpickChance;
-    }
-
-    public List<String> getPermissions() {
-        List<String> permissions = new ArrayList<>();
-        String path = "Permissions.Rank." + name();
-        FileConfiguration config = Main.getInstance().getConfig();
-        if (config.contains(path)) {
-            for (String permission : config.getStringList(path)) {
-                if (!permissions.contains(permission.toLowerCase()))
-                    permissions.add(permission.toLowerCase());
-            }
-        }
-
-        return permissions;
-    }
-
-    public boolean addPermission(String node) {
-        node = node.toLowerCase();
-        if (getPermissions().contains(node))
-            return false;
-
-        String path = "Permissions.Rank." + name();
-        FileConfiguration config = Main.getInstance().getConfig();
-        List<String> permissions = new ArrayList<>(getPermissions());
-        permissions.add(node.toLowerCase());
-        config.set(path, permissions);
-        Main.getInstance().saveConfig();
-
-        scPlayerManager.updatePermissions(Rank.valueOf(name()));
-
-        return true;
-    }
-
-    public boolean removePermission(String node) {
-        node = node.toLowerCase();
-        if (!getPermissions().contains(node))
-            return false;
-
-        String path = "Permissions.Rank." + name();
-        FileConfiguration config = Main.getInstance().getConfig();
-        List<String> permissions = new ArrayList<>(getPermissions());
-        permissions.remove(node.toLowerCase());
-        config.set(path, permissions);
-        Main.getInstance().saveConfig();
-
-        scPlayerManager.updatePermissions(Rank.valueOf(name()));
-
-        return true;
     }
 
     public String getName() {

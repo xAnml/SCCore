@@ -3,6 +3,8 @@ package net.anmlmc.SCCore.Duels;
 import net.anmlmc.SCCore.Main;
 import net.anmlmc.SCCore.SCPlayer.SCPlayer;
 import net.anmlmc.SCCore.SCPlayer.SCPlayerManager;
+import net.anmlmc.SCCore.Stats.Stat;
+import net.anmlmc.SCCore.Stats.StatsManager;
 import net.anmlmc.SCCore.Utils.Fanciful.FancyMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -24,6 +26,7 @@ public class Arena {
     private Main instance;
     private FileConfiguration config;
     private SCPlayerManager scPlayerManager;
+    private StatsManager statsManager;
     private Player primaryPlayer;
     private Location primaryPlayerLocation;
     private Player secondaryPlayer;
@@ -36,6 +39,7 @@ public class Arena {
         this.instance = instance;
         config = instance.getConfig();
         scPlayerManager = instance.getSCPlayerManager();
+        statsManager = instance.getStatsManager();
         running = false;
     }
 
@@ -112,8 +116,8 @@ public class Arena {
             return;
         }
 
-        SCPlayer primary = scPlayerManager.getSCPlayer(primaryPlayer);
-        SCPlayer secondary = scPlayerManager.getSCPlayer(secondaryPlayer);
+        SCPlayer primary = scPlayerManager.getSCPlayer(primaryPlayer.getUniqueId());
+        SCPlayer secondary = scPlayerManager.getSCPlayer(secondaryPlayer.getUniqueId());
 
         running = true;
 
@@ -136,12 +140,12 @@ public class Arena {
             task = null;
         }
 
-        SCPlayer scLoser = scPlayerManager.getSCPlayer(loser);
+        SCPlayer scLoser = scPlayerManager.getSCPlayer(loser.getUniqueId());
         Player winner = loser.equals(primaryPlayer) ? secondaryPlayer : primaryPlayer;
-        SCPlayer scWinner = scPlayerManager.getSCPlayer(winner);
+        SCPlayer scWinner = scPlayerManager.getSCPlayer(winner.getUniqueId());
 
-        scWinner.setWins(scWinner.getWins() + 1);
-        scLoser.setLosses(scLoser.getLosses() + 1);
+        statsManager.setIntegerStat(winner.getUniqueId(), Stat.WINS, statsManager.getIntegerStat(winner.getUniqueId(), Stat.WINS) + 1);
+        statsManager.setIntegerStat(loser.getUniqueId(), Stat.KILLS, statsManager.getIntegerStat(loser.getUniqueId(), Stat.LOSSES) + 1);
 
         FancyMessage message = new FancyMessage(scWinner.getTag()).tooltip(scWinner.getHoverText()).then(" §6has " +
                 "beaten ").then(scLoser.getTag()).tooltip(scLoser.getHoverText()).then(" §6in the duel arena!");
@@ -167,8 +171,8 @@ public class Arena {
             this.task = null;
         }
 
-        SCPlayer primary = scPlayerManager.getSCPlayer(primaryPlayer);
-        SCPlayer secondary = scPlayerManager.getSCPlayer(secondaryPlayer);
+        SCPlayer primary = scPlayerManager.getSCPlayer(primaryPlayer.getUniqueId());
+        SCPlayer secondary = scPlayerManager.getSCPlayer(secondaryPlayer.getUniqueId());
 
         FancyMessage message = new FancyMessage("§6The duel between ").then(primary.getTag()).tooltip(primary
                 .getHoverText()).then(" and ").then(secondary.getTag()).tooltip(secondary.getHoverText()).then(
@@ -176,8 +180,8 @@ public class Arena {
 
         primary.removeCombatTag();
         secondary.removeCombatTag();
-        primary.getBase().teleport(primaryPlayerLocation);
-        secondary.getBase().teleport(secondaryPlayerLocation);
+        primaryPlayer.teleport(primaryPlayerLocation);
+        secondaryPlayer.teleport(secondaryPlayerLocation);
 
         reset();
     }

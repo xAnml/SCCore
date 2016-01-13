@@ -2,7 +2,9 @@ package net.anmlmc.SCCore.Ranks.Commands;
 
 import com.earth2me.essentials.User;
 import net.anmlmc.SCCore.Main;
+import net.anmlmc.SCCore.Ranks.PermissionsManager;
 import net.anmlmc.SCCore.Ranks.Rank;
+import net.anmlmc.SCCore.Ranks.RankManager;
 import net.anmlmc.SCCore.SCPlayer.SCPlayer;
 import net.anmlmc.SCCore.SCPlayer.SCPlayerManager;
 import net.anmlmc.SCCore.Utils.Fanciful.FancyMessage;
@@ -19,10 +21,14 @@ public class RankCommand implements CommandExecutor {
 
     Main instance;
     SCPlayerManager scPlayerManager;
+    RankManager rankManager;
+    PermissionsManager permissionsManager;
 
     public RankCommand(Main instance) {
         this.instance = instance;
         scPlayerManager = instance.getSCPlayerManager();
+        rankManager = instance.getRankManager();
+        permissionsManager = instance.getPermissionsManager();
     }
 
     @Override
@@ -50,7 +56,7 @@ public class RankCommand implements CommandExecutor {
                 return false;
             }
 
-            SCPlayer scPlayer = scPlayerManager.getSCPlayer(user.getBase());
+            SCPlayer scPlayer = scPlayerManager.getSCPlayer(player.getUniqueId());
 
             if (args[0].equalsIgnoreCase("set")) {
 
@@ -65,7 +71,7 @@ public class RankCommand implements CommandExecutor {
                 FancyMessage message = new FancyMessage("§9[STAFF] ");
 
                 if (hover) {
-                    SCPlayer senderSCPlayer = scPlayerManager.getSCPlayer((Player) sender);
+                    SCPlayer senderSCPlayer = scPlayerManager.getSCPlayer(((Player) sender).getUniqueId());
                     message = message.then(senderSCPlayer.getTag()).tooltip(senderSCPlayer.getHoverText()).then(" §7has " +
                             "set ").then(scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then("§7's rank to " + rank
                             .getName() + "§7.");
@@ -76,14 +82,13 @@ public class RankCommand implements CommandExecutor {
                 }
 
                 scPlayerManager.staff(message);
-                scPlayer.setCachedRank(rank);
-                instance.getLogger().info(sender.getName() + " has set " + scPlayer.getBase().getName() + "'s rank to" +
-                        " " + rank.name());
-                scPlayerManager.updatePermissions(scPlayer.getBase());
+                rankManager.setRank(player.getUniqueId(), rank);
+                instance.getLogger().info(sender.getName() + " has set " + player.getName() + "'s rank to " + rank.name());
+                permissionsManager.updateAttachment(player.getUniqueId());
                 return true;
             } else if (args[0].equalsIgnoreCase("get")) {
                 FancyMessage message = new FancyMessage("§aThe player ").then("§a" + player.getName()).tooltip(scPlayer
-                        .getHoverText()).then("§a's rank is " + scPlayer.getCachedRank().getName() + "§a.");
+                        .getHoverText()).then("§a's rank is " + rankManager.getRank(player.getUniqueId()).getName() + "§a.");
                 message.send(sender);
                 return true;
             } else {

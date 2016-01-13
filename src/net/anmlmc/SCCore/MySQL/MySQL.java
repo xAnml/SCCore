@@ -50,11 +50,15 @@ public class MySQL {
         return statement.executeQuery();
     }
 
-    public int executeUpdate(String qry) throws SQLException {
+    public void executeUpdate(String qry) throws SQLException {
 
         PreparedStatement statement = connection.prepareStatement(qry);
-        int task = statement.executeUpdate();
+        statement.executeUpdate();
         statement.close();
-        return task;
+    }
+
+    public void executeUpdate(PreparedStatement qry) throws SQLException {
+        qry.execute();
+        qry.close();
     }
 }

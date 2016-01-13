@@ -39,7 +39,7 @@ public class LockpickListeners implements Listener {
         final Entity entity = e.getEntity();
         if ((entity instanceof Player)) {
             Player player = (Player) entity;
-            final LockpickRunnable task = scPlayerManager.getLockpicking().remove(player);
+            final LockpickRunnable task = scPlayerManager.getLockpicking().remove(player.getUniqueId());
             if (task != null) {
                 task.cancel();
                 player.sendMessage("§cYour attempt at lockpicking was cancelled due to damage.");
@@ -51,7 +51,7 @@ public class LockpickListeners implements Listener {
     public void onPlayerMoveEvent(final PlayerMoveEvent e) {
         if (e.getFrom().getX() != e.getTo().getX() || e.getFrom().getY() != e.getTo().getY() || e.getFrom().getZ() != e.getTo().getZ()) {
             final Player player = e.getPlayer();
-            final LockpickRunnable task = scPlayerManager.getLockpicking().remove(player);
+            final LockpickRunnable task = scPlayerManager.getLockpicking().remove(player.getUniqueId());
             if (task != null) {
                 task.cancel();
                 player.sendMessage("§cYour attempt at lockpicking was cancelled due to movement.");
@@ -63,7 +63,7 @@ public class LockpickListeners implements Listener {
     public void onPlayerInteract(final PlayerInteractEvent e) {
         Action action = e.getAction();
         Player player = e.getPlayer();
-        SCPlayer scPlayer = scPlayerManager.getSCPlayer(player);
+        SCPlayer scPlayer = scPlayerManager.getSCPlayer(player.getUniqueId());
         ItemStack itemStack = player.getItemInHand();
         Block block = e.getClickedBlock();
         final Location location = block.getLocation();
@@ -104,8 +104,8 @@ public class LockpickListeners implements Listener {
 
         player.sendMessage("§aCommencing start of lockpicking the target block - ");
 
-        LockpickRunnable runnable = new LockpickRunnable(instance, block, scPlayer, 1);
-        scPlayerManager.getLockpicking().put(player, runnable);
+        LockpickRunnable runnable = new LockpickRunnable(instance, block, player.getUniqueId(), 1);
+        scPlayerManager.getLockpicking().put(player.getUniqueId(), runnable);
         runnable.runTaskTimer(instance, 10L, 50L);
 
 

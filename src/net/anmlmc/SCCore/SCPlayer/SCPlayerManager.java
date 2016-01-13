@@ -7,26 +7,20 @@ import com.massivecraft.factions.entity.MPlayerColl;
 import com.massivecraft.massivecore.ps.PS;
 import net.anmlmc.SCCore.Lockpicks.LockpickRunnable;
 import net.anmlmc.SCCore.Main;
-import net.anmlmc.SCCore.Punishments.PunishmentEntry;
-import net.anmlmc.SCCore.Punishments.PunishmentType;
-import net.anmlmc.SCCore.Ranks.Rank;
+import net.anmlmc.SCCore.Ranks.RankManager;
+import net.anmlmc.SCCore.Stats.StatsManager;
 import net.anmlmc.SCCore.Utils.Fanciful.FancyMessage;
+import net.anmlmc.SCCore.Utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.permissions.PermissionAttachment;
 
 import java.util.*;
 
@@ -36,20 +30,20 @@ import java.util.*;
 public class SCPlayerManager implements Listener {
 
     private Main instance;
+    private RankManager rankManager;
+    private StatsManager statsManager;
+    private Utils utils;
     private List<UUID> shoutCooldowns;
-    private Map<Player, LockpickRunnable> lockpicking;
-    private Map<Player, SCPlayer> scPlayers;
-    private Map<Player, List<PunishmentEntry>> cachedPunishments;
-    private Map<Player, Rank> cachedRanks;
-    private HashMap<UUID, PermissionAttachment> permissions;
+    private Map<UUID, LockpickRunnable> lockpicking;
+    private Map<UUID, SCPlayer> scPlayers;
 
     public SCPlayerManager(Main instance) {
         this.instance = instance;
+        rankManager = instance.getRankManager();
+        statsManager = instance.getStatsManager();
+        utils = instance.getUtils();
         shoutCooldowns = new ArrayList<>();
         scPlayers = new HashMap<>();
-        cachedPunishments = new HashMap<>();
-        cachedRanks = new HashMap<>();
-        permissions = new HashMap<>();
         lockpicking = new HashMap<>();
     }
 
@@ -57,46 +51,26 @@ public class SCPlayerManager implements Listener {
         return shoutCooldowns;
     }
 
-    public Map<Player, LockpickRunnable> getLockpicking() {
+    public Map<UUID, LockpickRunnable> getLockpicking() {
         return lockpicking;
     }
 
-    public Map<Player, Rank> getCachedRanks() {
-        return cachedRanks;
-    }
-
-    public Map<Player, List<PunishmentEntry>> getCachedPunishments() {
-        return cachedPunishments;
-    }
-
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(final PlayerJoinEvent e) {
         Player player = e.getPlayer();
-
-        SCPlayer scPlayer = getSCPlayer(player);
-
-        for (PunishmentEntry entry : scPlayer.getPunishments(PunishmentType.BAN)) {
-            if (!entry.hasExpired()) {
-                String punisher = (entry.getPunisher() != null) ? getSCPlayer(Bukkit.getPlayer(entry.getPunisher()))
-                        .getTag() : "§6Console";
-                player.getPlayer().kickPlayer("§4You have been permanently banned!\n" + entry.getReason() + "§4- " +
-                        punisher);
-            }
-        }
+        addSCPlayer(player.getUniqueId());
+        SCPlayer scPlayer = getSCPlayer(player.getUniqueId());
+        staff(new FancyMessage("§9[STAFF] " + scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §econnected."));
 
         e.setJoinMessage(null);
-        FancyMessage message = new FancyMessage(scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §ehas logged in.");
-        broadcast(message);
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerQuit(final PlayerQuitEvent e) {
         Player player = e.getPlayer();
-        SCPlayer scPlayer = getSCPlayer(player);
+        SCPlayer scPlayer = getSCPlayer(player.getUniqueId());
 
         e.setQuitMessage(null);
-        FancyMessage message = new FancyMessage(scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §ehas logged off.");
-        broadcast(message);
 
         if (scPlayer.isCombatTagged()) {
             player.setHealth(0);
@@ -104,18 +78,9 @@ public class SCPlayerManager implements Listener {
             broadcast(new FancyMessage(scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §5has logged off while in combat!"));
         }
 
-        removeSCPlayer(scPlayer);
-    }
+        staff(new FancyMessage("§9[STAFF] " + scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §edisconnected."));
 
-    @EventHandler
-    public void onPlayerCommandPre(final PlayerCommandPreprocessEvent e) {
-        if (getSCPlayer(e.getPlayer()).isCombatTagged()) {
-            if (e.getMessage().equalsIgnoreCase("ct") || e.getMessage().equalsIgnoreCase("combattime"))
-                return;
-
-            e.setCancelled(true);
-            e.getPlayer().sendMessage("§cYou are not permitted to execute commands while in combat.");
-        }
+        removeSCPlayer(player.getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -142,42 +107,9 @@ public class SCPlayerManager implements Listener {
             return;
         }
 
-        getSCPlayer(player).combatTag();
-        getSCPlayer(target).combatTag();
+        getSCPlayer(player.getUniqueId()).combatTag();
+        getSCPlayer(target.getUniqueId()).combatTag();
 
-    }
-
-
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onPlayerDeath(final PlayerDeathEvent e) {
-
-        e.setDeathMessage(null);
-
-        if (!(e.getEntity().getKiller() instanceof Player))
-            return;
-
-        Player playerKilled = e.getEntity();
-        SCPlayer killed = getSCPlayer(playerKilled);
-        Player playerKiller = e.getEntity().getKiller();
-        SCPlayer killer = getSCPlayer(playerKiller);
-
-        killed.setDeaths(killed.getDeaths() + 1);
-        killer.setKills(killer.getKills() + 1);
-
-        killed.removeCombatTag();
-
-        ItemStack head = new ItemStack(Material.SKULL_ITEM, 1);
-        head.setDurability((short) 3);
-        SkullMeta headMeta = (SkullMeta) head.getItemMeta();
-        headMeta.setLore(Arrays.asList("§aKiller: " + killer.getTag()));
-        headMeta.setOwner(playerKilled.getName());
-        headMeta.setDisplayName(killed.getTag() + "§f's Head");
-        head.setItemMeta(headMeta);
-        e.getDrops().add(head);
-
-        FancyMessage message = new FancyMessage(killed.getTag()).tooltip(killed.getHoverText()).then(" §7has " +
-                "been killed by ").then(killer.getTag()).tooltip(killer.getHoverText()).then("§7.");
-        broadcast(message);
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -185,7 +117,7 @@ public class SCPlayerManager implements Listener {
         e.setCancelled(true);
 
         Player player = e.getPlayer();
-        SCPlayer scPlayer = getSCPlayer(player);
+        SCPlayer scPlayer = getSCPlayer(player.getUniqueId());
 
         if (player.isOp()) e.setMessage(e.getMessage().replace('&', ChatColor.COLOR_CHAR));
 
@@ -200,65 +132,39 @@ public class SCPlayerManager implements Listener {
         }
     }
 
-    public SCPlayer getSCPlayer(Player player) {
-        if (scPlayers.containsKey(player))
-            return scPlayers.get(player);
+    public SCPlayer getSCPlayer(UUID uuid) {
+        if (scPlayers.containsKey(uuid))
+            return scPlayers.get(uuid);
 
-        if (player.isOnline()) {
-            addSCPlayer(player);
-            return getSCPlayer(player);
-        }
-
-        return new SCPlayer(player);
+        return new SCPlayer(instance, uuid);
     }
 
-    public void addSCPlayer(Player player) {
-        if (scPlayers.containsKey(player))
+    public void addSCPlayer(UUID uuid) {
+        if (scPlayers.containsKey(uuid))
             return;
 
-        SCPlayer scPlayer = new SCPlayer(player);
+        scPlayers.put(uuid, new SCPlayer(instance, uuid));
+        rankManager.setRank(uuid, rankManager.getRank(uuid));
+        statsManager.loadStats(uuid);
 
-        scPlayers.put(player, scPlayer);
-
-        if (!scPlayer.hasSQLRank()) {
-            cachedRanks.put(player, Rank.DEFAULT);
-        } else {
-            cachedRanks.put(player, scPlayer.getSQLRank());
-        }
-
-        cachedPunishments.put(player, scPlayer.getSQLPunishments());
-
-        permissions.put(player.getUniqueId(), scPlayer.permissionAttachment());
     }
 
-    public void removeSCPlayer(SCPlayer scPlayer) {
+    public void removeSCPlayer(UUID uuid) {
 
-        Player player = scPlayer.getBase();
+        if (scPlayers.containsKey(uuid))
+            scPlayers.remove(uuid);
 
-        if (!player.isOnline())
-            return;
-
-        player.removeAttachment(permissions.get(player));
-        permissions.remove(player);
-
-        scPlayer.setSQLRank(cachedRanks.get(player));
-        scPlayer.setSQLPunishments(cachedPunishments.get(player));
-
-        scPlayers.remove(scPlayer.getBase());
+        rankManager.setSQLRank(uuid, rankManager.getRank(uuid));
+        statsManager.unloadStats(uuid);
     }
 
     public void loadSCPlayers() {
 
-        for (SCPlayer scPlayer : scPlayers.values()) {
-            removeSCPlayer(scPlayer);
+        for (UUID uuid : scPlayers.keySet()) {
+            removeSCPlayer(uuid);
         }
-
-        permissions.clear();
-        cachedRanks.clear();
-        cachedPunishments.clear();
-
         for (Player player : Bukkit.getOnlinePlayers()) {
-            addSCPlayer(player);
+            addSCPlayer(player.getUniqueId());
         }
     }
 
@@ -290,36 +196,4 @@ public class SCPlayerManager implements Listener {
         }
     }
 
-    public Rank getRankById(int id) {
-        for (Rank rank : Rank.values()) {
-            if (rank.getId() == id)
-                return rank;
-        }
-        return Rank.DEFAULT;
-    }
-
-    public Map<UUID, PermissionAttachment> getPermissionAttachments() {
-        return permissions;
-    }
-
-    public void updatePermissions(Rank rank) {
-        for (SCPlayer scPlayer : scPlayers.values()) {
-            if (scPlayer.getCachedRank().equals(rank)) {
-                if (permissions.containsKey(scPlayer.getBase().getUniqueId())) {
-                    permissions.replace(scPlayer.getBase().getUniqueId(), scPlayer.permissionAttachment());
-                }
-            }
-        }
-    }
-
-    public void updatePermissions(Player player) {
-        if (!player.isOnline()) return;
-
-        SCPlayer scPlayer = getSCPlayer(player);
-
-        if (permissions.containsKey(player.getUniqueId())) {
-            player.removeAttachment(permissions.get(player.getUniqueId()));
-            permissions.replace(player.getUniqueId(), scPlayer.permissionAttachment());
-        }
-    }
 }
