@@ -1,6 +1,5 @@
 package net.anmlmc.SCCore.Ranks.Commands;
 
-import com.earth2me.essentials.User;
 import net.anmlmc.SCCore.Main;
 import net.anmlmc.SCCore.Ranks.PermissionsManager;
 import net.anmlmc.SCCore.Ranks.Rank;
@@ -55,12 +54,6 @@ public class PermsCommand implements CommandExecutor {
             OfflinePlayer player = instance.getServer().getOfflinePlayer(args[1]);
 
             if (player != null) {
-                User user = instance.getEssentials().getOfflineUser(args[1]);
-
-                if (user == null) {
-                    sender.sendMessage("§cNo player with the given name found.");
-                    return false;
-                }
 
                 SCPlayer scPlayer = scPlayerManager.getSCPlayer(player.getUniqueId());
 

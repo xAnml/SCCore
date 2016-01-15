@@ -71,7 +71,7 @@ public class SCPlayerManager implements Listener {
         SCPlayer scPlayer = getSCPlayer(player.getUniqueId());
 
         if (rankManager.getRank(player.getUniqueId()).getId() >= Rank.MOD.getId())
-            staff(new FancyMessage("§9[STAFF] " + scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §econnected."));
+            staff(new FancyMessage("§9[STAFF] ").then(scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §econnected."));
 
         e.setJoinMessage(null);
     }
@@ -90,7 +90,7 @@ public class SCPlayerManager implements Listener {
         }
 
         if (rankManager.getRank(player.getUniqueId()).getId() >= Rank.MOD.getId())
-            staff(new FancyMessage("§9[STAFF] " + scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §edisconnected."));
+            staff(new FancyMessage("§9[STAFF] ").then(scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §edisconnected."));
 
         removeSCPlayer(player.getUniqueId());
     }

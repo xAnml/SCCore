@@ -55,6 +55,9 @@ public class PermissionsManager {
 
     public void updateAttachment(UUID uuid) {
 
+        if (!Bukkit.getOfflinePlayer(uuid).isOnline())
+            return;
+
         removeAttachment(uuid);
         setAttachment(Bukkit.getPlayer(uuid));
     }
