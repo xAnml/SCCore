@@ -22,11 +22,11 @@ public class ArenaManager {
 
     public boolean insideBorders(Location location) {
 
-        if (!arena.allValidLocations())
-            return false;
-
         Location primaryCorner = arena.getLocation(ArenaLocationType.PrimaryCorner);
         Location secondaryCorner = arena.getLocation(ArenaLocationType.SecondaryCorner);
+
+        if (primaryCorner == null || secondaryCorner == null)
+            return false;
 
         int x1 = Math.min(primaryCorner.getBlockX(), secondaryCorner.getBlockX());
         int y1 = Math.min(primaryCorner.getBlockY(), secondaryCorner.getBlockY());

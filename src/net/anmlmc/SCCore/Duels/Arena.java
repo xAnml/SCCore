@@ -27,10 +27,8 @@ public class Arena {
     private FileConfiguration config;
     private SCPlayerManager scPlayerManager;
     private StatsManager statsManager;
-    private Player primaryPlayer;
-    private Location primaryPlayerLocation;
-    private Player secondaryPlayer;
-    private Location secondaryPlayerLocation;
+    private Player primaryPlayer, secondaryPlayer;
+    private Location primaryPlayerLocation, secondaryPlayerLocation;
     private boolean running;
     private BukkitTask task;
 
@@ -150,14 +148,15 @@ public class Arena {
         FancyMessage message = new FancyMessage(scWinner.getTag()).tooltip(scWinner.getHoverText()).then(" §6has " +
                 "beaten ").then(scLoser.getTag()).tooltip(scLoser.getHoverText()).then(" §6in the duel arena!");
         scPlayerManager.broadcast(message);
-
+        scWinner.removeCombatTag();
+        scLoser.removeCombatTag();
         winner.sendMessage("§aYou have 10 seconds to collect the dropped items.");
 
         new BukkitRunnable() {
             @Override
             public void run() {
 
-                Location location = winner.equals(primaryPlayer) ? primaryPlayerLocation : secondaryPlayerLocation;
+                Location location = winner.getName().equalsIgnoreCase(primaryPlayer.getName()) ? primaryPlayerLocation : secondaryPlayerLocation;
                 winner.teleport(location);
 
                 reset();
@@ -167,8 +166,8 @@ public class Arena {
 
     public void forceEnd() {
         if (task != null) {
-            this.task.cancel();
-            this.task = null;
+            task.cancel();
+            task = null;
         }
 
         SCPlayer primary = scPlayerManager.getSCPlayer(primaryPlayer.getUniqueId());

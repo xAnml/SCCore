@@ -5,10 +5,12 @@ import net.anmlmc.SCCore.Chat.Commands.ShoutCommand;
 import net.anmlmc.SCCore.Duels.ArenaManager;
 import net.anmlmc.SCCore.Duels.Commands.ArenaCommand;
 import net.anmlmc.SCCore.Duels.Commands.DuelCommand;
-import net.anmlmc.SCCore.Duels.Commands.SpectateCommand;
 import net.anmlmc.SCCore.Duels.DuelListeners;
 import net.anmlmc.SCCore.Lockpicks.LockpickListeners;
 import net.anmlmc.SCCore.MySQL.MySQL;
+import net.anmlmc.SCCore.Punishments.Commands.*;
+import net.anmlmc.SCCore.Punishments.PunishmentListeners;
+import net.anmlmc.SCCore.Punishments.PunishmentManager;
 import net.anmlmc.SCCore.Ranks.Commands.PermsCommand;
 import net.anmlmc.SCCore.Ranks.Commands.RankCommand;
 import net.anmlmc.SCCore.Ranks.PermissionsManager;
@@ -39,6 +41,7 @@ public class Main extends JavaPlugin implements Listener {
     private PermissionsManager permissionsManager;
     private Utils utils;
     private MySQL mySQL;
+    private PunishmentManager punishmentManager;
 
     public static Main getInstance() {
         return instance;
@@ -55,9 +58,11 @@ public class Main extends JavaPlugin implements Listener {
     public PermissionsManager getPermissionsManager() {
         return permissionsManager;
     }
+
     public SCPlayerManager getSCPlayerManager() {
         return scPlayerManager;
     }
+
     public ArenaManager getArenaManager() {
         return arenaManager;
     }
@@ -66,9 +71,14 @@ public class Main extends JavaPlugin implements Listener {
         return statsManager;
     }
 
+    public PunishmentManager getPunishmentManager() {
+        return punishmentManager;
+    }
+
     public Utils getUtils() {
         return utils;
     }
+
     public Essentials getEssentials() {
         return essentials;
     }
@@ -111,6 +121,7 @@ public class Main extends JavaPlugin implements Listener {
         pm.registerEvents(new LockpickListeners(this), this);
         pm.registerEvents(new DuelListeners(this), this);
         pm.registerEvents(new StatListeners(this), this);
+        pm.registerEvents(new PunishmentListeners(this), this);
     }
 
     public void registerCommands() {
@@ -119,17 +130,23 @@ public class Main extends JavaPlugin implements Listener {
         getCommand("perms").setExecutor(new PermsCommand(this));
         getCommand("arena").setExecutor(new ArenaCommand(this));
         getCommand("duel").setExecutor(new DuelCommand(this));
-        getCommand("spectate").setExecutor(new SpectateCommand(this));
+        getCommand("ban").setExecutor(new BanCommand(this));
+        getCommand("tempban").setExecutor(new TempbanCommand(this));
+        getCommand("mute").setExecutor(new MuteCommand(this));
+        getCommand("tempmute").setExecutor(new TempmuteCommand(this));
+        getCommand("unban").setExecutor(new UnbanCommand(this));
+        getCommand("unmute").setExecutor(new UnmuteCommand(this));
 
     }
 
     public void registerManagers() {
         mySQL = new MySQL(this);
-        scPlayerManager = new SCPlayerManager(this);
-        arenaManager = new ArenaManager(this);
         rankManager = new RankManager(this);
         permissionsManager = new PermissionsManager(this);
         statsManager = new StatsManager(this);
+        punishmentManager = new PunishmentManager(this);
+        scPlayerManager = new SCPlayerManager(this);
+        arenaManager = new ArenaManager(this);
         utils = new Utils();
     }
 

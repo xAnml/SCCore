@@ -31,7 +31,7 @@ public class PermissionsManager {
     public void setAttachment(Player player) {
         PermissionAttachment attachment = player.addAttachment(instance);
 
-        for (String permission : getPermissions(rankManager.getRank(player.getUniqueId()))) {
+        for (String permission : getRollingPermissions(rankManager.getRank(player.getUniqueId()))) {
             attachment.setPermission(permission, true);
         }
 
@@ -45,19 +45,18 @@ public class PermissionsManager {
 
     public void removeAttachment(UUID uuid) {
         if (attachments.containsKey(uuid)) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                player.removeAttachment(attachments.get(uuid));
+            }
             attachments.remove(uuid);
         }
     }
 
     public void updateAttachment(UUID uuid) {
-        if (attachments.containsKey(uuid)) {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null) {
-                player.removeAttachment(attachments.get(uuid));
-                attachments.remove(uuid);
-                setAttachment(player);
-            }
-        }
+
+        removeAttachment(uuid);
+        setAttachment(Bukkit.getPlayer(uuid));
     }
 
     public void updateAttachments(Rank rank) {
@@ -81,7 +80,7 @@ public class PermissionsManager {
         if (config.contains(path)) {
             for (String permission : config.getStringList(path)) {
                 if (!permissions.contains(permission.toLowerCase()))
-                    permissions.add(permission.toLowerCase());
+                    permissions.add(permission);
             }
         }
 
@@ -91,10 +90,25 @@ public class PermissionsManager {
     public List<String> getPermissions(Rank rank) {
         List<String> permissions = new ArrayList<>();
 
+        String path = "Permissions.Rank." + rank.name();
+        FileConfiguration config = instance.getConfig();
+        if (config.contains(path)) {
+            for (String permission : config.getStringList(path)) {
+                if (!permissions.contains(permission.toLowerCase()))
+                    permissions.add(permission);
+            }
+        }
+
+        return permissions;
+    }
+
+    public List<String> getRollingPermissions(Rank rank) {
+        List<String> permissions = new ArrayList<>();
+
         for (int i = rank.getId(); i >= 0; i--) {
             for (String permission : getPermissions(rankManager.getRankById(i))) {
                 if (!permissions.contains(permission.toLowerCase()))
-                    permissions.add(permission.toLowerCase());
+                    permissions.add(permission);
             }
         }
 
@@ -140,12 +154,13 @@ public class PermissionsManager {
 
     public boolean addPermission(UUID uuid, String node) {
         node = node.toLowerCase();
-        if (getPermissions(uuid).contains(node))
+
+        List<String> permissions = new ArrayList<>(getPermissions(uuid));
+        if (permissions.contains(node))
             return false;
 
         String path = "Permissions.Player." + uuid;
         FileConfiguration config = instance.getConfig();
-        List<String> permissions = new ArrayList<>(getPermissions(uuid));
         permissions.add(node);
         config.set(path, permissions);
         instance.saveConfig();

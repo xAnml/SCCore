@@ -44,7 +44,7 @@ public class StatListeners implements Listener {
         SCPlayer killer = scPlayerManager.getSCPlayer(playerKiller.getUniqueId());
 
         statsManager.setIntegerStat(playerKilled.getUniqueId(), Stat.DEATHS, statsManager.getIntegerStat(playerKilled.getUniqueId(), Stat.DEATHS) + 1);
-        statsManager.setIntegerStat(playerKiller.getUniqueId(), Stat.KILLS, statsManager.getIntegerStat(playerKilled.getUniqueId(), Stat.KILLS) + 1);
+        statsManager.setIntegerStat(playerKiller.getUniqueId(), Stat.KILLS, statsManager.getIntegerStat(playerKiller.getUniqueId(), Stat.KILLS) + 1);
 
         killed.removeCombatTag();
 

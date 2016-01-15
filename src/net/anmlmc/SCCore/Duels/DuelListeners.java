@@ -41,11 +41,6 @@ public class DuelListeners implements Listener {
             e.getPlayer().sendMessage("§cYou are not permitted to teleport into the duel arena.");
             e.setCancelled(true);
         }
-
-        if (arenaManager.insideBorders(e.getFrom()) && arena.getArenaPlayers().contains(e.getPlayer())) {
-            e.getPlayer().sendMessage("§cYou are not permitted to teleport out of the duel arena.");
-            e.setCancelled(true);
-        }
     }
 
     @EventHandler

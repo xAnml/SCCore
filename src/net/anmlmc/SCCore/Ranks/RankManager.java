@@ -73,7 +73,6 @@ public class RankManager {
 
         if (!hasRank(uuid)) {
             try {
-
                 mySQL.executeUpdate("INSERT INTO `SCPlayerInfo`(`UUID`, `Rank`) VALUES ('" + uuid + "','" + rank.name() + "')");
             } catch (SQLException e) {
                 e.printStackTrace();

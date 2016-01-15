@@ -7,6 +7,11 @@ import com.massivecraft.factions.entity.MPlayerColl;
 import com.massivecraft.massivecore.ps.PS;
 import net.anmlmc.SCCore.Lockpicks.LockpickRunnable;
 import net.anmlmc.SCCore.Main;
+import net.anmlmc.SCCore.Punishments.Punishment;
+import net.anmlmc.SCCore.Punishments.PunishmentManager;
+import net.anmlmc.SCCore.Punishments.PunishmentType;
+import net.anmlmc.SCCore.Ranks.PermissionsManager;
+import net.anmlmc.SCCore.Ranks.Rank;
 import net.anmlmc.SCCore.Ranks.RankManager;
 import net.anmlmc.SCCore.Stats.StatsManager;
 import net.anmlmc.SCCore.Utils.Fanciful.FancyMessage;
@@ -31,6 +36,8 @@ public class SCPlayerManager implements Listener {
 
     private Main instance;
     private RankManager rankManager;
+    private PermissionsManager permissionsManager;
+    private PunishmentManager punishmentManager;
     private StatsManager statsManager;
     private Utils utils;
     private List<UUID> shoutCooldowns;
@@ -40,7 +47,9 @@ public class SCPlayerManager implements Listener {
     public SCPlayerManager(Main instance) {
         this.instance = instance;
         rankManager = instance.getRankManager();
+        permissionsManager = instance.getPermissionsManager();
         statsManager = instance.getStatsManager();
+        punishmentManager = instance.getPunishmentManager();
         utils = instance.getUtils();
         shoutCooldowns = new ArrayList<>();
         scPlayers = new HashMap<>();
@@ -60,7 +69,9 @@ public class SCPlayerManager implements Listener {
         Player player = e.getPlayer();
         addSCPlayer(player.getUniqueId());
         SCPlayer scPlayer = getSCPlayer(player.getUniqueId());
-        staff(new FancyMessage("§9[STAFF] " + scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §econnected."));
+
+        if (rankManager.getRank(player.getUniqueId()).getId() >= Rank.MOD.getId())
+            staff(new FancyMessage("§9[STAFF] " + scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §econnected."));
 
         e.setJoinMessage(null);
     }
@@ -78,7 +89,8 @@ public class SCPlayerManager implements Listener {
             broadcast(new FancyMessage(scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §5has logged off while in combat!"));
         }
 
-        staff(new FancyMessage("§9[STAFF] " + scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §edisconnected."));
+        if (rankManager.getRank(player.getUniqueId()).getId() >= Rank.MOD.getId())
+            staff(new FancyMessage("§9[STAFF] " + scPlayer.getTag()).tooltip(scPlayer.getHoverText()).then(" §edisconnected."));
 
         removeSCPlayer(player.getUniqueId());
     }
@@ -114,6 +126,26 @@ public class SCPlayerManager implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerChat(final AsyncPlayerChatEvent e) {
+        List<Punishment> punishments = punishmentManager.getPunishments(e.getPlayer().getUniqueId());
+
+        for (Punishment punishment : punishments) {
+            if (punishment.getType().equals(PunishmentType.MUTE)) {
+                if (!punishment.hasExpired()) {
+                    e.getPlayer().sendMessage("§cYou are permanently muted.");
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+
+            if (punishment.getType().equals(PunishmentType.TEMPMUTE)) {
+                if (!punishment.hasExpired()) {
+                    e.getPlayer().sendMessage("§cYou are temporarily muted until §3" + punishment.getEndTimestamp() + " §c.");
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+        }
+
         e.setCancelled(true);
 
         Player player = e.getPlayer();
@@ -145,6 +177,7 @@ public class SCPlayerManager implements Listener {
 
         scPlayers.put(uuid, new SCPlayer(instance, uuid));
         rankManager.setRank(uuid, rankManager.getRank(uuid));
+        permissionsManager.setAttachment(Bukkit.getPlayer(uuid));
         statsManager.loadStats(uuid);
 
     }
@@ -155,6 +188,7 @@ public class SCPlayerManager implements Listener {
             scPlayers.remove(uuid);
 
         rankManager.setSQLRank(uuid, rankManager.getRank(uuid));
+        permissionsManager.removeAttachment(uuid);
         statsManager.unloadStats(uuid);
     }
 

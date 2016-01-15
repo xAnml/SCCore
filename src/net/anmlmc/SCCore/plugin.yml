@@ -14,7 +14,17 @@ commands:
     default: false
   duel:
   spectate:
-  combattime:
-    aliases: [ct]
   ban:
+    default: false
   tempban:
+    default: false
+  mute:
+    default: false
+  tempmute:
+    default: false
+  unban:
+    default: false
+  unmute:
+    default: false
+  warn:
+    default: false

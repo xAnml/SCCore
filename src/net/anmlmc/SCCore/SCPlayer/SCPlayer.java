@@ -64,7 +64,7 @@ public class SCPlayer {
                 "   §aDeaths: §f" + statsManager.getIntegerStat(uuid, Stat.DEATHS),
                 "   §aK/D: §f" + +statsManager.getKD(uuid),
                 "§bInfo:",
-                "   §aFaction: §f", // ((getFaction().isNone() || getFaction() == null) ? "Wilderness" : getFaction().getName();
+                "   §aFaction: §f",
                 "   §aPower: §f",
                 "§bDuels:",
                 "   §aWins: §f" + statsManager.getIntegerStat(uuid, Stat.WINS),

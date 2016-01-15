@@ -53,7 +53,7 @@ public class StatsManager {
         }
 
         try {
-            ResultSet resultSet = mySQL.getResultSet("SELECT " + stat.getName() + "FROM SCPlayerInfo WHERE UUID='" + uuid + "'");
+            ResultSet resultSet = mySQL.getResultSet("SELECT " + stat.getName() + " FROM SCPlayerInfo WHERE UUID='" + uuid + "'");
             if (resultSet.next()) {
                 return resultSet.getInt(stat.getName());
             }
