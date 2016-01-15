@@ -20,6 +20,7 @@ import net.anmlmc.SCCore.Stats.StatListeners;
 import net.anmlmc.SCCore.Stats.StatsManager;
 import net.anmlmc.SCCore.Utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerListPingEvent;
@@ -106,6 +107,8 @@ public class Main extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        for (Player player : Bukkit.getOnlinePlayers())
+            player.kickPlayer("§cSensationCraft §7is restarting. Please wait 30 seconds before re-logging.");
 
         instance = null;
 
