@@ -136,6 +136,8 @@ public class Main extends JavaPlugin implements Listener {
         getCommand("tempmute").setExecutor(new TempmuteCommand(this));
         getCommand("unban").setExecutor(new UnbanCommand(this));
         getCommand("unmute").setExecutor(new UnmuteCommand(this));
+        getCommand("kick").setExecutor(new KickCommand(this));
+        getCommand("warn").setExecutor(new WarnCommand(this));
 
     }
 

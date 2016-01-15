@@ -26,5 +26,7 @@ commands:
     default: false
   unmute:
     default: false
+  kick:
+    default: false
   warn:
     default: false
