@@ -123,7 +123,7 @@ public class PermissionsManager {
         if (permissions.contains(node))
             return false;
 
-        String path = "Permissions.Rank." + rank.getName();
+        String path = "Permissions.Rank." + rank.name();
         FileConfiguration config = instance.getConfig();
         permissions.add(node);
         config.set(path, permissions);
@@ -141,7 +141,7 @@ public class PermissionsManager {
         if (!permissions.contains(node))
             return false;
 
-        String path = "Permissions.Rank." + rank.getName();
+        String path = "Permissions.Rank." + rank.name();
         FileConfiguration config = instance.getConfig();
         permissions.remove(node);
         config.set(path, permissions);
