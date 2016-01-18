@@ -5,6 +5,7 @@ import com.massivecraft.factions.entity.BoardColl;
 import com.massivecraft.factions.entity.Faction;
 import com.massivecraft.factions.entity.MPlayerColl;
 import com.massivecraft.massivecore.ps.PS;
+import net.anmlmc.SCCore.Duels.ArenaManager;
 import net.anmlmc.SCCore.Lockpicks.LockpickRunnable;
 import net.anmlmc.SCCore.Main;
 import net.anmlmc.SCCore.Punishments.Punishment;
@@ -38,6 +39,7 @@ public class SCPlayerManager implements Listener {
     private RankManager rankManager;
     private PermissionsManager permissionsManager;
     private PunishmentManager punishmentManager;
+    private ArenaManager arenaManager;
     private StatsManager statsManager;
     private Utils utils;
     private List<UUID> shoutCooldowns;
@@ -50,6 +52,7 @@ public class SCPlayerManager implements Listener {
         permissionsManager = instance.getPermissionsManager();
         statsManager = instance.getStatsManager();
         punishmentManager = instance.getPunishmentManager();
+        arenaManager = instance.getArenaManager();
         utils = instance.getUtils();
         shoutCooldowns = new ArrayList<>();
         scPlayers = new HashMap<>();
@@ -101,7 +104,8 @@ public class SCPlayerManager implements Listener {
 
         Player player = (Player) e.getEntity();
         Player target = (Player) e.getDamager();
-
+        SCPlayer scp = getSCPlayer(player.getUniqueId());
+        SCPlayer sct = getSCPlayer(target.getUniqueId());
         Faction faction = BoardColl.get().getFactionAt(PS.valueOf(target.getLocation().getChunk()));
 
 
@@ -115,12 +119,13 @@ public class SCPlayerManager implements Listener {
         if (pFaction.getRelationTo(tFaction) == Rel.MEMBER && !pFaction.isNone()) {
             return;
         }
+
         if (pFaction.getRelationTo(tFaction) == Rel.ALLY) {
             return;
         }
 
-        getSCPlayer(player.getUniqueId()).combatTag();
-        getSCPlayer(target.getUniqueId()).combatTag();
+        scp.combatTag();
+        sct.combatTag();
 
     }
 

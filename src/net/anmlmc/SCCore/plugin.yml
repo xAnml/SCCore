@@ -6,6 +6,8 @@ depend: [Essentials]
 commands:
   shout:
     aliases: [s]
+  staff:
+    aliases: [st]
   rank:
     default: false
   perms:
@@ -30,3 +32,9 @@ commands:
     default: false
   warn:
     default: false
+  helpaccept:
+  helpcancel:
+  helpdeny:
+  helplist:
+  helpread:
+  helprequest:

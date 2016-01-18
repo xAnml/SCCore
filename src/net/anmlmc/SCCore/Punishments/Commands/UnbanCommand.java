@@ -62,7 +62,7 @@ public class UnbanCommand implements CommandExecutor {
                     punishment.execute();
 
                     String sName = !(sender instanceof Player) ? "§6Console" : scPlayerManager.getSCPlayer(((Player) sender).getUniqueId()).getTag();
-                    scPlayerManager.staff("§9[STAFF] " + sName + " §7has globally unbanned " + scPlayer.getTag() + "§7.");
+                    scPlayerManager.staff("§9[STAFF] " + sName + " §7has unbanned " + scPlayer.getTag() + "§7.");
                     return true;
                 }
             }

@@ -3,7 +3,9 @@ package net.anmlmc.SCCore.Stats;
 import net.anmlmc.SCCore.Main;
 import net.anmlmc.SCCore.SCPlayer.SCPlayer;
 import net.anmlmc.SCCore.SCPlayer.SCPlayerManager;
+import net.anmlmc.SCCore.Utils.Fanciful.FancyMessage;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -56,5 +58,12 @@ public class StatListeners implements Listener {
         headMeta.setDisplayName(killed.getTag() + "§f's Head");
         head.setItemMeta(headMeta);
         e.getDrops().add(head);
+
+        FancyMessage message = new FancyMessage("§cYou were killed by ").then(killer.getTag()).tooltip(killer.getHoverText()).then("§c.");
+        message.send(playerKilled);
+        message = new FancyMessage("§aYou have killed ").then(killed.getTag()).tooltip(killed.getHoverText()).then("§a.");
+        message.send(playerKiller);
+        playerKilled.playSound(playerKilled.getLocation(), Sound.NOTE_PLING, 3.0F, 0.533F);
+        playerKiller.playSound(playerKiller.getLocation(), Sound.NOTE_PLING, 3.0F, 0.7F);
     }
 }

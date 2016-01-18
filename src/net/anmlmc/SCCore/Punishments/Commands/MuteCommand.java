@@ -80,7 +80,7 @@ public class MuteCommand implements CommandExecutor {
         punishmentManager.addPunishment(mute);
 
         String sName = creator == null ? "§6Console" : scPlayerManager.getSCPlayer(creator).getTag();
-        scPlayerManager.staff("§9[STAFF] " + sName + " §7has globally muted " + scPlayer.getTag() + " §7with reason: §a" + reason + "§7.");
+        scPlayerManager.staff("§9[STAFF] " + sName + " §7has muted " + scPlayer.getTag() + " §7with reason: §a" + reason + "§7.");
 
         return true;
     }

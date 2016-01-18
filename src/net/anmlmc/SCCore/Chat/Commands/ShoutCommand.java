@@ -79,14 +79,12 @@ public class ShoutCommand implements CommandExecutor {
             }
 
             FancyMessage message = new FancyMessage("§c[S] ").then(scPlayer.getTag()).tooltip(scPlayer.getHoverText()
-            ).then("§f§l: " + msg);
+            ).then("§f: §l" + msg);
 
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                message.send(player);
-            }
+            scPlayerManager.broadcast(message);
             return true;
         } else {
-            Bukkit.broadcastMessage("§c[S] §6Console§f§l: " + msg);
+            Bukkit.broadcastMessage("§c[S] §6Console§f: §l" + msg);
             return true;
         }
     }

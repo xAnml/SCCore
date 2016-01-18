@@ -32,12 +32,19 @@ public class PermissionsManager {
         PermissionAttachment attachment = player.addAttachment(instance);
 
         for (String permission : getRollingPermissions(rankManager.getRank(player.getUniqueId()))) {
-            attachment.setPermission(permission, true);
+            if (permission.substring(0, 1).equalsIgnoreCase("-"))
+                attachment.setPermission(permission.substring(1, permission.length() - 1), false);
+            else
+                attachment.setPermission(permission, true);
         }
 
         for (String permission : getPermissions(player.getUniqueId())) {
-            if (!attachment.getPermissions().containsKey(permission))
-                attachment.setPermission(permission, true);
+            if (!attachment.getPermissions().containsKey(permission)) {
+                if (permission.substring(0, 1).equalsIgnoreCase("-"))
+                    attachment.setPermission(permission.substring(1, permission.length() - 1), false);
+                else
+                    attachment.setPermission(permission, true);
+            }
         }
 
         attachments.put(player.getUniqueId(), attachment);
@@ -64,14 +71,8 @@ public class PermissionsManager {
 
     public void updateAttachments(Rank rank) {
         for (UUID uuid : attachments.keySet()) {
-            if (rankManager.getRank(uuid).equals(rank)) {
-                Player player = Bukkit.getPlayer(uuid);
-                if (player != null) {
-                    player.removeAttachment(attachments.get(uuid));
-                    attachments.remove(uuid);
-                    setAttachment(player);
-                }
-            }
+            if (rankManager.getRank(uuid).equals(rank))
+                updateAttachment(uuid);
         }
     }
 

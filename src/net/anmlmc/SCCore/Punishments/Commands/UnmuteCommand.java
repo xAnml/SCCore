@@ -62,7 +62,7 @@ public class UnmuteCommand implements CommandExecutor {
                     punishment.execute();
 
                     String sName = !(sender instanceof Player) ? "§6Console" : iPlayerManager.getSCPlayer(((Player) sender).getUniqueId()).getTag();
-                    iPlayerManager.staff("§9[STAFF] " + sName + " §7has globally unmuted " + scPlayer.getTag() + " §7.");
+                    iPlayerManager.staff("§9[STAFF] " + sName + " §7has unmuted " + scPlayer.getTag() + "§7.");
                     return true;
                 }
             }

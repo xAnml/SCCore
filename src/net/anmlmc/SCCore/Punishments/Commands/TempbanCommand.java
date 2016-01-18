@@ -90,7 +90,7 @@ public class TempbanCommand implements CommandExecutor {
         punishmentManager.addPunishment(tempban);
 
         String sName = creator == null ? "§6Console" : scPlayerManager.getSCPlayer(creator).getTag();
-        scPlayerManager.staff("§9[STAFF] " + sName + " §7has globally temp-banned " + scPlayer.getTag() + " §7for §3" + utils.actualLength(args[1]) + " §7with reason: §a" + reason + "§7.");
+        scPlayerManager.staff("§9[STAFF] " + sName + " §7has temp-banned " + scPlayer.getTag() + " §7for §3" + utils.actualLength(args[1]) + " §7with reason: §a" + reason + "§7.");
 
         if (offlinePlayer.isOnline()) {
             offlinePlayer.getPlayer().kickPlayer(tempban.getMessage());

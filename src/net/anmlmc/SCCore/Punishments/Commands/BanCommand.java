@@ -80,7 +80,7 @@ public class BanCommand implements CommandExecutor {
         punishmentManager.addPunishment(ban);
 
         String sName = creator == null ? "§6Console" : scPlayerManager.getSCPlayer(creator).getTag();
-        scPlayerManager.staff("§9[STAFF] " + sName + " §7has globally banned " + scPlayer.getTag() + " §7with reason: §a" + reason + "§7.");
+        scPlayerManager.staff("§9[STAFF] " + sName + " §7has banned " + scPlayer.getTag() + " §7with reason: §a" + reason + "§7.");
 
         if (offlinePlayer.isOnline()) {
             offlinePlayer.getPlayer().kickPlayer(ban.getMessage());

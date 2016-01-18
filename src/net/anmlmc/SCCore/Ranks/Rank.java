@@ -10,10 +10,10 @@ import net.anmlmc.SCCore.SCPlayer.SCPlayerManager;
 public enum Rank {
 
     OWNER(9, "§6Owner", "§6%s", 100),
-    DEV(8, "§6Dev", "§6%s", 100),
+    DEV(8, "§6Dev", "Developer", "§6%s", 100),
     ADMINPLUS(7, "§4Admin§e+", "Admin+", "§4%s§e+", 100),
-    ADMIN(6, "§4Admin", "§4%s", 100),
-    MOD(5, "§3Mod", "§3%s", 80),
+    ADMIN(6, "§4Admin", "Administrator", "§4%s", 100),
+    MOD(5, "§3Mod", "Moderator", "§3%s", 80),
 
     PREMIUMPLUS(4, "§9Premium§e+", "Premium+", "§9%s§e+", 80),
     PREMIUM(3, "§9Premium", "§9%s", 60),

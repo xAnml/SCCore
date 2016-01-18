@@ -2,11 +2,15 @@ package net.anmlmc.SCCore;
 
 import com.earth2me.essentials.Essentials;
 import net.anmlmc.SCCore.Chat.Commands.ShoutCommand;
+import net.anmlmc.SCCore.Chat.Commands.StaffCommand;
 import net.anmlmc.SCCore.Duels.ArenaManager;
 import net.anmlmc.SCCore.Duels.Commands.ArenaCommand;
 import net.anmlmc.SCCore.Duels.Commands.DuelCommand;
+import net.anmlmc.SCCore.Duels.Commands.SpectateCommand;
 import net.anmlmc.SCCore.Duels.DuelListeners;
+import net.anmlmc.SCCore.HelpRequests.*;
 import net.anmlmc.SCCore.Lockpicks.LockpickListeners;
+import net.anmlmc.SCCore.McMMO.DisarmWard;
 import net.anmlmc.SCCore.MySQL.MySQL;
 import net.anmlmc.SCCore.Punishments.Commands.*;
 import net.anmlmc.SCCore.Punishments.PunishmentListeners;
@@ -40,6 +44,7 @@ public class Main extends JavaPlugin implements Listener {
     private RankManager rankManager;
     private StatsManager statsManager;
     private PermissionsManager permissionsManager;
+    private HelpRequest helpRequest;
     private Utils utils;
     private MySQL mySQL;
     private PunishmentManager punishmentManager;
@@ -56,6 +61,9 @@ public class Main extends JavaPlugin implements Listener {
         return rankManager;
     }
 
+    public HelpRequest getHelpRequest() {
+        return helpRequest;
+    }
     public PermissionsManager getPermissionsManager() {
         return permissionsManager;
     }
@@ -125,14 +133,17 @@ public class Main extends JavaPlugin implements Listener {
         pm.registerEvents(new DuelListeners(this), this);
         pm.registerEvents(new StatListeners(this), this);
         pm.registerEvents(new PunishmentListeners(this), this);
+        pm.registerEvents(new DisarmWard(this), this);
     }
 
     public void registerCommands() {
-        getCommand("rank").setExecutor(new RankCommand(this));
         getCommand("shout").setExecutor(new ShoutCommand(this));
+        getCommand("staff").setExecutor(new StaffCommand(this));
+        getCommand("rank").setExecutor(new RankCommand(this));
         getCommand("perms").setExecutor(new PermsCommand(this));
         getCommand("arena").setExecutor(new ArenaCommand(this));
         getCommand("duel").setExecutor(new DuelCommand(this));
+        getCommand("spectate").setExecutor(new SpectateCommand(this));
         getCommand("ban").setExecutor(new BanCommand(this));
         getCommand("tempban").setExecutor(new TempbanCommand(this));
         getCommand("mute").setExecutor(new MuteCommand(this));
@@ -141,6 +152,12 @@ public class Main extends JavaPlugin implements Listener {
         getCommand("unmute").setExecutor(new UnmuteCommand(this));
         getCommand("kick").setExecutor(new KickCommand(this));
         getCommand("warn").setExecutor(new WarnCommand(this));
+        getCommand("helpaccept").setExecutor(new HelpAccept(helpRequest));
+        getCommand("helpcancel").setExecutor(new HelpCancel(helpRequest));
+        getCommand("helpdeny").setExecutor(new HelpDeny(helpRequest));
+        getCommand("helplist").setExecutor(new HelpList(helpRequest));
+        getCommand("helpread").setExecutor(new HelpRead(helpRequest));
+        getCommand("helprequest").setExecutor(new HelpRequest());
 
     }
 
@@ -152,6 +169,7 @@ public class Main extends JavaPlugin implements Listener {
         punishmentManager = new PunishmentManager(this);
         scPlayerManager = new SCPlayerManager(this);
         arenaManager = new ArenaManager(this);
+        helpRequest = new HelpRequest();
         utils = new Utils();
     }
 
