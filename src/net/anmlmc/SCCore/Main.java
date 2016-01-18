@@ -10,7 +10,6 @@ import net.anmlmc.SCCore.Duels.Commands.SpectateCommand;
 import net.anmlmc.SCCore.Duels.DuelListeners;
 import net.anmlmc.SCCore.HelpRequests.*;
 import net.anmlmc.SCCore.Lockpicks.LockpickListeners;
-import net.anmlmc.SCCore.McMMO.DisarmWard;
 import net.anmlmc.SCCore.MySQL.MySQL;
 import net.anmlmc.SCCore.Punishments.Commands.*;
 import net.anmlmc.SCCore.Punishments.PunishmentListeners;
@@ -133,7 +132,6 @@ public class Main extends JavaPlugin implements Listener {
         pm.registerEvents(new DuelListeners(this), this);
         pm.registerEvents(new StatListeners(this), this);
         pm.registerEvents(new PunishmentListeners(this), this);
-        pm.registerEvents(new DisarmWard(this), this);
     }
 
     public void registerCommands() {
